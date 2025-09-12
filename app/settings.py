@@ -69,6 +69,9 @@ DATABASES = {
 # static
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+static_dir = BASE_DIR / "static"
+static_dir.mkdir(exist_ok=True)
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
