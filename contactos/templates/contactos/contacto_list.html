@@ -1,57 +1,105 @@
-{% extends 'contactos/index.html' %}
+{% extends 'contactos/base.html' %}
+
 {% block content %}
-<h1>Contactos</h1>
+<div class="row mb-4">
+    <div class="col-md-8">
+        <form method="get" class="d-flex">
+            <input type="text" name="q" value="{{ request.GET.q }}" 
+                   class="form-control me-2" placeholder="Buscar contactos...">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            {% if request.GET.q %}
+                <a href="{% url 'contactos:contacto_list' %}" class="btn btn-outline-secondary ms-2">Limpiar</a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'contactos:contacto_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Contacto
+        </a>
+    </div>
+</div>
 
-<form method="get" class="row g-2 mb-3">
-  <div class="col-auto">
-    <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search name, email or phone">
-  </div>
-  <div class="col-auto">
-    <button class="btn btn-primary">Search</button>
-    <a href="{% url 'contactos:contacto_list' %}" class="btn btn-outline-secondary">Clear</a>
-  </div>
-</form>
+{% if contacto %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfonos</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contacto_item in contacto %}
+                    <tr>
+                        <td><strong>{{ contacto_item.nombre }} {{ contacto_item.apellido }}</strong></td>
+                        <td>
+                            {% if contacto_item.email %}
+                                {{ contacto_item.email }}
+                            {% else %}
+                                <span class="text-muted"><em>Sin email</em></span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for telefono in contacto_item.telefonos.all %}
+                                <span class="badge bg-info me-1">
+                                    {{ telefono.numero_telefono }} 
+                                    <small>({{ telefono.referencia }})</small>
+                                </span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'contactos:contacto_edit' contacto_item.pk %}" 
+                                   class="btn btn-outline-primary">Editar</a>
+                                <a href="{% url 'contactos:contacto_delete' contacto_item.pk %}" 
+                                   class="btn btn-outline-danger">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Nombre</th><th>Email</th><th>Telefonos</th><th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for contacto in contactos %}
-      <tr>
-        <td>{{ contactos.nombre }} {{ contactos.apellido }}</td>
-        <td>{{ contactos.email }}</td>
-        <td>
-          {% for telefono in contacto.telefonos.all %}
-            <div>{{ telefono.numero_telefono }} <small class="text-muted">({{ telefono.referencia }})</small></div>
-          {% empty %}
-            <span class="text-muted">No existen telefonos.</span>
-          {% endfor %}
-        </td>
-        <td>
-          <a class="btn btn-sm btn-secondary" href="{% url 'contactos:person_edit' person.pk %}">Editar</a>
-          <a class="btn btn-sm btn-danger" href="{% url 'contactos:person_delete' person.pk %}">Borrar</a>
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="4">Contactos no encontrados.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+    {% if is_paginated %}
+        <nav aria-label="Paginación">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page=1">Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
+                    </li>
+                {% endif %}
 
-{% if is_paginated %}
-  <nav>
-    <ul class="pagination">
-      {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}">Prev</a></li>
-      {% endif %}
-      <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
-      {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}">Sig</a></li>
-      {% endif %}
-    </ul>
-  </nav>
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="text-center py-5">
+        <h3 class="text-muted">No se encontraron contactos</h3>
+        {% if request.GET.q %}
+            <p>No hay resultados para "{{ request.GET.q }}"</p>
+            <a href="{% url 'contactos:contacto_list' %}" class="btn btn-outline-primary">Ver todos los contactos</a>
+        {% else %}
+            <p>¡Comienza agregando tu primer contacto!</p>
+            <a href="{% url 'contactos:contacto_add' %}" class="btn btn-primary">Agregar Contacto</a>
+        {% endif %}
+    </div>
 {% endif %}
 {% endblock %}

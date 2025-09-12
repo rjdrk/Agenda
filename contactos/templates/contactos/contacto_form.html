@@ -1,24 +1,231 @@
-{% extends 'contactos/index.html' %}
+{% extends 'contactos/base.html' %}
+
+{% block title %}
+    {% if create %}Agregar Contacto{% else %}Editar Contacto{% endif %} - Agenda Telefónica
+{% endblock %}
+
+{% block header %}
+    {% if create %}Agregar Nuevo Contacto{% else %}Editar Contacto{% endif %}
+{% endblock %}
+
 {% block content %}
-<h2>{% if create %}Agregar contacto{% else %}Editar Contacto{% endif %}</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <h5>Phones</h5>
-  {{ formset.management_form }}
-  <table class="table">
-    <thead><tr><th>Numero</th><th>Referencia</th><th>Borrar</th></tr></thead>
-    <tbody>
-      {% for f in formset %}
-        <tr>
-          <td>{{ f.numero_telefono }}</td>
-          <td>{{ f.referencia }}</td>
-          <td>{% if f.instance.pk %}{{ f.DELETE }}{% else %}{% if f.can_delete %}{{ f.DELETE }}{% endif %}{% endif %}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <button class="btn btn-primary" type="submit">Guardar</button>
-  <a class="btn btn-secondary" href="{% url 'contactos:contacto_list' %}">Cancelar</a>
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between mb-4">
+            <a href="{% url 'contactos:contacto_list' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Regresar
+            </a>
+        </div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Información Personal</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre *</label>
+                                {{ form.nombre }}
+                                {% if form.nombre.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.nombre.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.apellido.id_for_label }}" class="form-label">Apellido</label>
+                                {{ form.apellido }}
+                                {% if form.apellido.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.apellido.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.email.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Campo opcional</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Teléfonos</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="add-phone">
+                        <i class="fas fa-plus"></i> Agregar Teléfono
+                    </button>
+                </div>
+                <div class="card-body">
+                    {{ formset.management_form }}
+                    
+                    {% if formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            {{ formset.non_form_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div id="phone-formset">
+                        {% for form_phone in formset %}
+                            <div class="phone-form border rounded p-3 mb-3">
+                                {% if form_phone.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {{ form_phone.non_field_errors }}
+                                    </div>
+                                {% endif %}
+                                {% for hidden in form_phone.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Número de Teléfono *</label>
+                                            {{ form_phone.numero_telefono }}
+                                            {% if form_phone.numero_telefono.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form_phone.numero_telefono.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Referencia</label>
+                                            {{ form_phone.referencia }}
+                                            {% if form_phone.referencia.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form_phone.referencia.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Eliminar</label>
+                                            <div>
+                                                {% if form_phone.DELETE and not forloop.first %}
+                                                  {{ form_phone.DELETE }}
+                                                  <label for="{{ form_phone.DELETE.id_for_label }}" class="form-label">
+                                                      Eliminar
+                                                  </label>
+                                                {% elif not forloop.first %}
+                                                  <button type="button" class="btn btn-outline-danger btn-sm remove-phone">
+                                                      <i class="fas fa-trash"></i>
+                                                  </button>
+                                                {% else %}
+                                                    <span class="text-muted small"></span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <small class="text-muted">* Al menos un número de teléfono es requerido</small>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'contactos:contacto_list' %}" class="btn btn-secondary">
+                  Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 
+                    {% if create %}Guardar Contacto{% else %}Actualizar Contacto{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar clases CSS a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="email"], select');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+
+    // Manejar la adición de nuevos teléfonos
+    let phoneFormCount = {{ formset.total_form_count }};
+    const maxForms = {{ formset.max_num }};
+    
+    document.getElementById('add-phone').addEventListener('click', function() {
+        if (phoneFormCount < maxForms) {
+            const formsetContainer = document.getElementById('phone-formset');
+            const emptyForm = `
+                <div class="phone-form border rounded p-3 mb-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Número de Teléfono *</label>
+                                <input type="text" name="telefonos-${phoneFormCount}-numero_telefono" class="form-control" id="id_telefonos-${phoneFormCount}-numero_telefono">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Referencia</label>
+                                <input type="text" name="telefonos-${phoneFormCount}-referencia" value="móvil" class="form-control" id="id_telefonos-${phoneFormCount}-referencia">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-label">Eliminar</label>
+                                <div>
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-phone">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="telefonos-${phoneFormCount}-id" id="id_telefonos-${phoneFormCount}-id">
+                </div>
+            `;
+            
+            formsetContainer.insertAdjacentHTML('beforeend', emptyForm);
+            phoneFormCount++;
+            
+            // Actualizar el contador de formularios
+            document.getElementById('id_telefonos-TOTAL_FORMS').value = phoneFormCount;
+        }
+    });
+
+    // Manejar la eliminación de teléfonos
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-phone')) {
+            const phoneForm = e.target.closest('.phone-form');
+            const deleteCheckbox = phoneForm.querySelector('input[name$="-DELETE"]');
+            
+            if (deleteCheckbox) {
+                // Si es un formulario existente, marcar para eliminar
+                deleteCheckbox.checked = true;
+                phoneForm.style.opacity = '0.5';
+                phoneForm.style.textDecoration = 'line-through';
+            } else {
+                // Si es un formulario nuevo, eliminar del DOM
+                phoneForm.remove();
+                phoneFormCount--;
+                document.getElementById('id_telefonos-TOTAL_FORMS').value = phoneFormCount;
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
