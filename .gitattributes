@@ -1,0 +1,20 @@
+# Asegurar que los scripts de shell usen finales de línea Unix
+*.sh text eol=lf
+entrypoint.sh text eol=lf
+
+# Archivos de código Python
+*.py text eol=lf
+
+# Archivos de configuración Docker
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+docker-compose.yaml text eol=lf
+
+# Archivos de configuración
+*.env text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+
+# Documentación
+*.md text eol=lf
+*.txt text eol=lf
