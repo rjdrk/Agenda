@@ -1,0 +1,57 @@
+{% extends 'contactos/index.html' %}
+{% block content %}
+<h1>Contactos</h1>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search name, email or phone">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Search</button>
+    <a href="{% url 'contactos:contacto_list' %}" class="btn btn-outline-secondary">Clear</a>
+  </div>
+</form>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nombre</th><th>Email</th><th>Telefonos</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for contacto in contactos %}
+      <tr>
+        <td>{{ contactos.nombre }} {{ contactos.apellido }}</td>
+        <td>{{ contactos.email }}</td>
+        <td>
+          {% for telefono in contacto.telefonos.all %}
+            <div>{{ telefono.numero_telefono }} <small class="text-muted">({{ telefono.referencia }})</small></div>
+          {% empty %}
+            <span class="text-muted">No existen telefonos.</span>
+          {% endfor %}
+        </td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="{% url 'contactos:person_edit' person.pk %}">Editar</a>
+          <a class="btn btn-sm btn-danger" href="{% url 'contactos:person_delete' person.pk %}">Borrar</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">Contactos no encontrados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if is_paginated %}
+  <nav>
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}">Prev</a></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}">Sig</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}

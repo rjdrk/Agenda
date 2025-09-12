@@ -1,0 +1,24 @@
+{% extends 'contactos/index.html' %}
+{% block content %}
+<h2>{% if create %}Agregar contacto{% else %}Editar Contacto{% endif %}</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <h5>Phones</h5>
+  {{ formset.management_form }}
+  <table class="table">
+    <thead><tr><th>Numero</th><th>Referencia</th><th>Borrar</th></tr></thead>
+    <tbody>
+      {% for f in formset %}
+        <tr>
+          <td>{{ f.numero_telefono }}</td>
+          <td>{{ f.referencia }}</td>
+          <td>{% if f.instance.pk %}{{ f.DELETE }}{% else %}{% if f.can_delete %}{{ f.DELETE }}{% endif %}{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button class="btn btn-primary" type="submit">Guardar</button>
+  <a class="btn btn-secondary" href="{% url 'contactos:contacto_list' %}">Cancelar</a>
+</form>
+{% endblock %}

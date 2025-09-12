@@ -1,0 +1,9 @@
+{% extends 'contactos/index.html' %}
+{% block content %}
+<h2>Eliminar Contacto</h2>
+<p>Estas seguro que quieres eliminar contacto? "{{ object }}"?</p>
+<form method="post">{% csrf_token %}
+  <button class="btn btn-danger" type="submit">Confirmar</button>
+  <a class="btn btn-secondary" href="{% url 'contactos:contacto_list' %}">Cancelar</a>
+</form>
+{% endblock %}
